@@ -36,7 +36,7 @@ CREATE TABLE `interpretative_dance` (
   `choreography_and_style` decimal(5,2) NOT NULL CHECK (`choreography_and_style` >= 0 and `choreography_and_style` <= 100),
   `costume_and_props` decimal(5,2) NOT NULL CHECK (`costume_and_props` >= 0 and `costume_and_props` <= 100),
   `stage_presence` decimal(5,2) NOT NULL CHECK (`stage_presence` >= 0 and `stage_presence` <= 100),
-  `total_score` decimal(6,2) GENERATED ALWAYS AS (`originality` * 0.25 + `mastery_of_steps` * 0.15 + `choreography_and_style` * 0.20 + `costume_and_props` * 0.25 + `stage_presence` * 0.15) STORED,
+  `total_score` decimal(6,2) GENERATED ALWAYS AS (`originality` + `mastery_of_steps` + `choreography_and_style` + `costume_and_props` + `stage_presence`) STORED,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -104,20 +104,18 @@ CREATE TABLE `vocal_contestants` (
 INSERT INTO `vocal_contestants` (`cand_id`, `cand_name`, `cand_team`, `created_at`) VALUES
 (1, 'Niel', 'Yellow', '2025-10-28 17:14:46');
 
--- --------------------------------------------------------
 
 --
--- Table structure for table `contestants`
+-- Table structure for table `modern_final_score`
 --
 
-CREATE TABLE `contestants` (
+CREATE TABLE `interpretative_final_score` (
   `cand_id` int(11) NOT NULL,
-  `cand_number` varchar(10) NOT NULL,
-  `cand_name` varchar(255) NOT NULL,
-  `cand_team` varchar(100) NOT NULL,
-  `cand_gender` enum('male','female') NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `final_score` decimal(5,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
 
 --
 -- Table structure for table `modern_final_score`
@@ -135,6 +133,17 @@ CREATE TABLE `modern_final_score` (
 --
 
 CREATE TABLE `vocal_final_score` (
+  `cand_id` int(11) NOT NULL,
+  `final_score` decimal(5,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Table structure for table `interpretative_final_score`
+--
+
+CREATE TABLE `interpretative_final_score` (
   `cand_id` int(11) NOT NULL,
   `final_score` decimal(5,2) NOT NULL,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
