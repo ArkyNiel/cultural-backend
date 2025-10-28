@@ -76,16 +76,16 @@ function storeVocalScore($scoreInput){
         // The final score is the average total_score (sum of all judges' total_scores divided by number of judges)
         $percentage = $avg_total;
 
-        // Check if final_score row exists for this cand_id
-        $check_query = "SELECT cand_id FROM final_score WHERE cand_id = '$cand_id'";
+        // Check if vocal_final_score row exists for this cand_id
+        $check_query = "SELECT cand_id FROM vocal_final_score WHERE cand_id = '$cand_id'";
         $check_result = mysqli_query($conn, $check_query);
         if (mysqli_num_rows($check_result) > 0) {
             // Update existing row
-            $update_query = "UPDATE final_score SET vocal_final_score = '$percentage' WHERE cand_id = '$cand_id'";
+            $update_query = "UPDATE vocal_final_score SET final_score = '$percentage' WHERE cand_id = '$cand_id'";
             mysqli_query($conn, $update_query);
         } else {
             // Insert new row
-            $insert_query = "INSERT INTO final_score (cand_id, vocal_final_score) VALUES ('$cand_id', '$percentage')";
+            $insert_query = "INSERT INTO vocal_final_score (cand_id, final_score) VALUES ('$cand_id', '$percentage')";
             mysqli_query($conn, $insert_query);
         }
 
