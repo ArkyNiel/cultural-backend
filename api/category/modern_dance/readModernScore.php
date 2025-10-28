@@ -25,16 +25,16 @@ if($requestMethod == 'GET'){
     
     if(isset($_GET['score_id'])){
         // Get specific score by ID
-        $vocalScore = getVocalScores($_GET);
+        $modernScore = getModernScores($_GET);
     }elseif(isset($_GET['cand_id'])){
         // Get score by candidate ID
-        $vocalScore = getVocalScoreByCandId($_GET);
+        $modernScore = getModernScoreByCandId($_GET);
     }else{
         // Get all scores
-        $vocalScore = getAllVocalScores();
+        $modernScore = getAllModernScores();
     }
     
-    echo $vocalScore;  // response
+    echo $modernScore;  // response
 
 }else {
     $data = [

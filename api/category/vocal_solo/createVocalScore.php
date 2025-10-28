@@ -25,13 +25,13 @@ if($requestMethod == 'POST'){
 
     if(empty($inputData)){
         // form submission
-        $storeTalentScore = storeVocalScore($_POST);
+        $storeVocalScore = storeVocalScore($_POST);
     }else{
         // json submission
-        $storeTalentScore = storeVocalScore($inputData);
+        $storeVocalScore = storeVocalScore($inputData);
     }
 
-    echo $storeTalentScore;  // response
+    echo $storeVocalScore;  // response
 
 }else {
     $data = [

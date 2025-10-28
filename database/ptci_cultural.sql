@@ -55,7 +55,7 @@ CREATE TABLE `modern_score` (
   `costume_and_props` decimal(5,2) NOT NULL CHECK (`costume_and_props` >= 0 and `costume_and_props` <= 100),
   `stage_presence` decimal(5,2) NOT NULL CHECK (`stage_presence` >= 0 and `stage_presence` <= 100),
   `audience_impact` decimal(5,2) NOT NULL CHECK (`audience_impact` >= 0 and `audience_impact` <= 100),
-  `total_score` decimal(6,2) GENERATED ALWAYS AS (`mastery_of_steps` * 0.25 + `choreography_and_style` * 0.30 + `costume_and_props` * 0.20 + `stage_presence` * 0.15 + `audience_impact` * 0.10) STORED,
+  `total_score` decimal(6,2) GENERATED ALWAYS AS (`mastery_of_steps` + `choreography_and_style` + `costume_and_props` + `stage_presence` + `audience_impact`) STORED,
   `created_at` timestamp NOT NULL DEFAULT current_timestamp()
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -120,7 +120,18 @@ CREATE TABLE `contestants` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
--- Table structure for table `final_score`
+-- Table structure for table `modern_final_score`
+--
+
+CREATE TABLE `modern_final_score` (
+  `cand_id` int(11) NOT NULL,
+  `final_score` decimal(5,2) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Table structure for table `vocal_final_score`
 --
 
 CREATE TABLE `vocal_final_score` (

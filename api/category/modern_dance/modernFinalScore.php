@@ -38,7 +38,7 @@ if($requestMethod == 'GET'){
                 fs.final_score,
                 fs.created_at,
                 fs.updated_at
-              FROM vocal_final_score fs
+              FROM modern_final_score fs
               INNER JOIN contestants c ON fs.cand_id = c.cand_id
               $whereClause
               ORDER BY fs.final_score DESC";
@@ -51,7 +51,7 @@ if($requestMethod == 'GET'){
 
             $data = [
                 'status' => 200,
-                'message' => 'Vocal Final Scores Fetched Successfully',
+                'message' => 'Modern Final Scores Fetched Successfully',
                 'data' => $res
             ];
             header("HTTP/1.0 200 OK");
@@ -59,7 +59,7 @@ if($requestMethod == 'GET'){
         }else{
             $data = [
                 'status' => 404,
-                'message' => 'No Vocal Final Scores Found',
+                'message' => 'No Modern Final Scores Found',
             ];
             header("HTTP/1.0 404 Not Found");
             echo json_encode($data);
