@@ -24,8 +24,8 @@ function storeModernScore($scoreInput){
         return error422('User not logged in');
     }
 
-    if (!isset($scoreInput['team_id']) || empty(trim($scoreInput['team_id']))) {
-        return error422('Enter team ID');
+    if (!isset($scoreInput['cand_id']) || empty(trim($scoreInput['cand_id']))) {
+        return error422('Enter candidate ID');
     }
     if (!isset($scoreInput['mastery_of_steps']) || empty(trim($scoreInput['mastery_of_steps']))) {
         return error422('Enter mastery of Steps score');
@@ -43,7 +43,7 @@ function storeModernScore($scoreInput){
         return error422('Enter audience impact score');
     }
 
-    $team_id = mysqli_real_escape_string($conn, $scoreInput['team_id']);
+    $cand_id = mysqli_real_escape_string($conn, $scoreInput['cand_id']);
     $judge_id = mysqli_real_escape_string($conn, $_SESSION['user_id']);
     $mastery_of_steps = mysqli_real_escape_string($conn, $scoreInput['mastery_of_steps']);
     $choreography_and_style = mysqli_real_escape_string($conn, $scoreInput['choreography_and_style']);
@@ -60,13 +60,15 @@ function storeModernScore($scoreInput){
         $checkResult = mysqli_query($conn, $checkQuery);
     } while (mysqli_num_rows($checkResult) > 0);
 
-    $query = "INSERT INTO vocal_score (score_id, team_id, judge_id, mastery_of_steps, choreography_and_style, costume_and_props, stage_presence, audience_impact)
-              VALUES ('$score_id', '$team_id', '$judge_id', '$mastery_of_steps', '$choreography_and_style', '$costume_and_props', '$stage_presence', '$audience_impact')";
+    $total_score = $mastery_of_steps + $choreography_and_style + $costume_and_props + $stage_presence + $audience_impact;
+
+    $query = "INSERT INTO modern_score (score_id, cand_id, judge_id, mastery_of_steps, choreography_and_style, costume_and_props, stage_presence, audience_impact, total_score)
+              VALUES ('$score_id', '$cand_id', '$judge_id', '$mastery_of_steps', '$choreography_and_style', '$costume_and_props', '$stage_presence', '$audience_impact', '$total_score')";
     $result = mysqli_query($conn, $query);
 
     if($result){
         // Calculate average total_score from all judges submitted so far for this contestant
-        $avg_query = "SELECT AVG(total_score) AS avg_total FROM modern_score WHERE team_id = '$team_id'";
+        $avg_query = "SELECT AVG(total_score) AS avg_total FROM modern_score WHERE cand_id = '$cand_id'";
         $avg_result = mysqli_query($conn, $avg_query);
         $avg_row = mysqli_fetch_assoc($avg_result);
         $avg_total = $avg_row['avg_total'];
@@ -74,16 +76,16 @@ function storeModernScore($scoreInput){
         // The final score is the average total_score (sum of all judges' total_scores divided by number of judges)
         $percentage = $avg_total;
 
-        // Check if vocal_final_score row exists for this cand_id
-        $check_query = "SELECT team_id FROM modern_final_score WHERE team_id = '$team_id'";
+        // Check if modern_final_score row exists for this cand_id
+        $check_query = "SELECT cand_id FROM modern_final_score WHERE cand_id = '$cand_id'";
         $check_result = mysqli_query($conn, $check_query);
         if (mysqli_num_rows($check_result) > 0) {
             // Update existing row
-            $update_query = "UPDATE modern_final_score SET final_score = '$percentage' WHERE team_id = '$team_id'";
+            $update_query = "UPDATE modern_final_score SET final_score = '$percentage' WHERE cand_id = '$cand_id'";
             mysqli_query($conn, $update_query);
         } else {
             // Insert new row
-            $insert_query = "INSERT INTO modern_final_score (team_id, final_score) VALUES ('$team_id', '$percentage')";
+            $insert_query = "INSERT INTO modern_final_score (cand_id, final_score) VALUES ('$cand_id', '$percentage')";
             mysqli_query($conn, $insert_query);
         }
 
@@ -118,8 +120,8 @@ function getAllModernScores($params = []){
 
     $query = "SELECT
                 vs.score_id,
-                vs.team_id,
-                vc.cand_team,
+                vs.cand_id as team_id,
+                vc.team,
                 vs.judge_id,
                 vs.mastery_of_steps,
                 vs.choreography_and_style,
@@ -128,7 +130,7 @@ function getAllModernScores($params = []){
                 vs.audience_impact,
                 vs.total_score
               FROM modern_score vs
-              INNER JOIN modern_team vc ON vs.team_id = vc.team_id
+              INNER JOIN modern_team vc ON vs.cand_id = vc.team_id
               $whereClause
               ORDER BY vs.judge_id, vs.total_score DESC";
 
@@ -185,8 +187,8 @@ function getModernScores($scoreParams){
     
     $query = "SELECT
                 vs.score_id,
-                vs.team_id,
-                vc.cand_team,
+                vs.cand_id as team_id,
+                vc.team,
                 vs.judge_id,
                 vs.mastery_of_steps,
                 vs.choreography_and_style,
@@ -194,7 +196,8 @@ function getModernScores($scoreParams){
                 vs.stage_presence,
                 vs.audience_impact,
                 vs.total_score
-              INNER JOIN modern_team vc ON vs.team_id = vc.team_id
+              FROM modern_score vs
+              INNER JOIN modern_team vc ON vs.cand_id = vc.team_id
               WHERE vs.score_id = '$score_id' LIMIT 1";
     
     $result = mysqli_query($conn, $query);
@@ -240,19 +243,18 @@ function getModernScoreByCandId($scoreParams){
 
     $query = "SELECT
                 vs.score_id,
-                vs.team_id,
-                vc.cand_team,
+                vs.cand_id as team_id,
+                vc.team,
                 vs.judge_id,
                 vs.mastery_of_steps,
                 vs.choreography_and_style,
                 vs.costume_and_props,
-                vs.diction,
                 vs.stage_presence,
                 vs.audience_impact,
                 vs.total_score
               FROM modern_score vs
-              INNER JOIN modern_team vc ON vs.team_id = vc.team_id
-              WHERE vs.team_id = '$team_id' LIMIT 1";
+              INNER JOIN modern_team vc ON vs.cand_id = vc.team_id
+              WHERE vs.cand_id = '$cand_id' LIMIT 1";
 
     $result = mysqli_query($conn, $query);
 
