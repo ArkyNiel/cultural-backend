@@ -24,22 +24,17 @@ if($requestMethod == 'GET'){
     $params = $_GET;
 
     $whereClause = "";
-    if (isset($params['gender']) && !empty(trim($params['gender']))) {
-        $gender = mysqli_real_escape_string($conn, $params['gender']);
-        $whereClause = "WHERE c.cand_gender = '$gender'";
-    }
+    // Note: vocal_contestants table does not have gender field, so no gender filter applied
 
     $query = "SELECT
                 fs.cand_id,
-                c.cand_number,
-                c.cand_name,
-                c.cand_team,
-                c.cand_gender,
+                vc.cand_name,
+                vc.cand_team,
                 fs.final_score,
                 fs.created_at,
                 fs.updated_at
               FROM vocal_final_score fs
-              INNER JOIN contestants c ON fs.cand_id = c.cand_id
+              INNER JOIN vocal_contestants vc ON fs.cand_id = vc.cand_id
               $whereClause
               ORDER BY fs.final_score DESC";
 

@@ -98,6 +98,26 @@ CREATE TABLE `vocal_contestants` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Table structure for table `modern_dance`
+--
+
+CREATE TABLE `modern_team` (
+  `team_id` int(11) NOT NULL,
+  `team` varchar(100) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Table structure for table `modern_dance`
+--
+
+CREATE TABLE `interpretative_team` (
+  `team_id` int(11) NOT NULL,
+  `team` varchar(100) NOT NULL,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
 -- Dumping data for table `vocal_contestants`
 --
 

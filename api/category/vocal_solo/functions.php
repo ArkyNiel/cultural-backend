@@ -62,7 +62,7 @@ function storeVocalScore($scoreInput){
         $checkResult = mysqli_query($conn, $checkQuery);
     } while (mysqli_num_rows($checkResult) > 0);
 
-    $query = "INSERT INTO vocal_score (score_id, cand_id, judge_id, `voice/tone_quality`, mastery_and_timing, vocal_expression, diction, stage_presence, entertainment_value)
+    $query = "INSERT INTO vocal_score (score_id, cand_id, judge_id, voice_tone_quality, mastery_and_timing, vocal_expression, diction, stage_presence, entertainment_value)
               VALUES ('$score_id', '$cand_id', '$judge_id', '$voice_tone_quality', '$mastery_and_timing', '$vocal_expression', '$diction', '$stage_presence', '$entertainment_value')";
     $result = mysqli_query($conn, $query);
 
@@ -122,7 +122,7 @@ function getAllVocalScores($params = []){
                 vc.cand_name,
                 vc.cand_team,
                 vs.judge_id,
-                vs.`voice/tone_quality`,
+                vs.voice_tone_quality,
                 vs.mastery_and_timing,
                 vs.vocal_expression,
                 vs.diction,
@@ -190,7 +190,7 @@ function getVocalScores($scoreParams){
                 vs.cand_id,
                 vc.cand_name,
                 vc.cand_team,
-                vs.`voice/tone_quality`,
+                vs.voice_tone_quality,
                 vs.mastery_and_timing,
                 vs.vocal_expression,
                 vs.diction,
@@ -247,7 +247,7 @@ function getVocalScoreByCandId($scoreParams){
                 vs.cand_id,
                 vc.cand_name,
                 vc.cand_team,
-                vs.`voice/tone_quality`,
+                vs.voice_tone_quality,
                 vs.mastery_and_timing,
                 vs.vocal_expression,
                 vs.diction,
@@ -320,7 +320,7 @@ function updateVocalScore($scoreInput){
     }else{
 
         $query = "UPDATE vocal_score SET
-                    `voice/tone_quality` = '$voice_tone_quality',
+                    voice_tone_quality = '$voice_tone_quality',
                     mastery_and_timing = '$mastery_and_timing',
                     vocal_expression = '$vocal_expression',
                     diction = '$diction',
@@ -399,7 +399,7 @@ function getVocalScoresByJudge($judgeParams){
                 vs.cand_id,
                 vc.cand_name,
                 vc.cand_team,
-                vs.`voice/tone_quality`,
+                vs.voice_tone_quality,
                 vs.mastery_and_timing,
                 vs.vocal_expression,
                 vs.diction,
