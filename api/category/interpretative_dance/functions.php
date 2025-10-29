@@ -16,8 +16,8 @@ function error422($message){
     exit();
 }
 
-// store vocal score
-function storeModernScore($scoreInput){
+// store interpretative score
+function storeInterpretativeScore($scoreInput){
     global $conn;
 
     if (!isset($_SESSION['user_id'])) {
@@ -28,7 +28,7 @@ function storeModernScore($scoreInput){
         return error422('Enter team ID');
     }
     if (!isset($scoreInput['originality']) || empty(trim($scoreInput['originality']))) {
-        return error422('Enter originality of Steps score');
+        return error422('Enter originality score');
     }
     if (!isset($scoreInput['mastery_of_steps']) || empty(trim($scoreInput['mastery_of_steps']))) {
         return error422('Enter mastery of steps score');
@@ -50,8 +50,7 @@ function storeModernScore($scoreInput){
     $choreography_and_style = mysqli_real_escape_string($conn, $scoreInput['choreography_and_style']);
     $costume_and_props = mysqli_real_escape_string($conn, $scoreInput['costume_and_props']);
     $stage_presence = mysqli_real_escape_string($conn, $scoreInput['stage_presence']);
-
-    // mark as done*
+    $total_score = $originality + $mastery_of_steps + $choreography_and_style + $costume_and_props + $stage_presence;
 
     // Generate unique score_id
     do {
@@ -60,30 +59,30 @@ function storeModernScore($scoreInput){
         $checkResult = mysqli_query($conn, $checkQuery);
     } while (mysqli_num_rows($checkResult) > 0);
 
-    $query = "INSERT INTO vocal_score (score_id, team_id, judge_id, originality, mastery_of_steps, choreography_and_style, costume_and_props, stage_presence)
-              VALUES ('$score_id', '$team_id', '$judge_id', '$originality', '$mastery_of_steps', '$choreography_and_style', '$costume_and_props', '$stage_presence')";
+    $query = "INSERT INTO interpretative_score (score_id, team_id, judge_id, originality, mastery_of_steps, choreography_and_style, costume_and_props, stage_presence, total_score)
+              VALUES ('$score_id', '$team_id', '$judge_id', '$originality', '$mastery_of_steps', '$choreography_and_style', '$costume_and_props', '$stage_presence', '$total_score')";
     $result = mysqli_query($conn, $query);
 
     if($result){
-        // Calculate average total_score from all judges submitted so far for this contestant
+        // Calculate average total_score from all judges submitted so far for this team
         $avg_query = "SELECT AVG(total_score) AS avg_total FROM interpretative_score WHERE team_id = '$team_id'";
         $avg_result = mysqli_query($conn, $avg_query);
         $avg_row = mysqli_fetch_assoc($avg_result);
         $avg_total = $avg_row['avg_total'];
 
-        // The final score is the average total_score (sum of all judges' total_scores divided by number of judges)
+        // The final score is the average total_score
         $percentage = $avg_total;
 
-        // Check if vocal_final_score row exists for this cand_id
+        // Check if interpretative_final_score row exists for this team_id
         $check_query = "SELECT team_id FROM interpretative_final_score WHERE team_id = '$team_id'";
         $check_result = mysqli_query($conn, $check_query);
         if (mysqli_num_rows($check_result) > 0) {
             // Update existing row
-            $update_query = "UPDATE interpretative_final_score SET final_score = '$percentage' WHERE team_id = '$team_id'";
+            $update_query = "UPDATE interpretative_final_score SET final_score = '$percentage', updated_at = NOW() WHERE team_id = '$team_id'";
             mysqli_query($conn, $update_query);
         } else {
             // Insert new row
-            $insert_query = "INSERT INTO interpretative_final_score (team_id, final_score) VALUES ('$team_id', '$percentage')";
+            $insert_query = "INSERT INTO interpretative_final_score (team_id, final_score, created_at, updated_at) VALUES ('$team_id', '$percentage', NOW(), NOW())";
             mysqli_query($conn, $insert_query);
         }
 
@@ -106,14 +105,14 @@ function storeModernScore($scoreInput){
 
 // mark as done *
 
-// READ - Get All Vocal Scores
+// READ - Get All Interpretative Scores
 function getAllInterpretativeScores($params = []){
     global $conn;
 
     $whereClause = "";
     if (isset($params['team']) && !empty(trim($params['team']))) {
         $team = mysqli_real_escape_string($conn, $params['team']);
-        $whereClause = "WHERE vc.team = '$team'";
+        $whereClause = "WHERE t.team = '$team'";
     }
 
     $query = "SELECT
@@ -125,9 +124,10 @@ function getAllInterpretativeScores($params = []){
                 vs.choreography_and_style,
                 vs.costume_and_props,
                 vs.stage_presence,
-                vs.total_score
+                vs.total_score,
+                vs.created_at
               FROM interpretative_score vs
-              INNER JOIN interpretative_team vc ON vs.team_id = vc.team_id
+              INNER JOIN teams t ON vs.team_id = t.team_id
               $whereClause
               ORDER BY vs.judge_id, vs.total_score DESC";
 
@@ -172,16 +172,16 @@ function getAllInterpretativeScores($params = []){
     }
 }
 
-// READ - Get Vocal Score by score_id
+// READ - Get Interpretative Score by score_id
 function getInterpretativeScores($scoreParams){
     global $conn;
-    
+
     $score_id = mysqli_real_escape_string($conn, $scoreParams['score_id']);
-    
+
     if(empty(trim($score_id))){
         return error422('Enter score ID');
     }
-    
+
     $query = "SELECT
                 vs.score_id,
                 vs.team_id,
@@ -191,16 +191,18 @@ function getInterpretativeScores($scoreParams){
                 vs.choreography_and_style,
                 vs.costume_and_props,
                 vs.stage_presence,
-                vs.total_score
-              INNER JOIN interpretative_team vc ON vs.team_id = vc.team_id
+                vs.total_score,
+                vs.created_at
+              FROM interpretative_score vs
+              INNER JOIN teams t ON vs.team_id = t.team_id
               WHERE vs.score_id = '$score_id' LIMIT 1";
-    
+
     $result = mysqli_query($conn, $query);
-    
+
     if($result){
         if(mysqli_num_rows($result) == 1){
             $res = mysqli_fetch_assoc($result);
-            
+
             $data = [
                 'status' => 200,
                 'message' => 'Interpretative Score Fetched Successfully',
@@ -226,14 +228,14 @@ function getInterpretativeScores($scoreParams){
     }
 }
 
-// READ - Get Vocal Score by cand_id
-function getInterpretativeScoreByCandId($scoreParams){
+// READ - Get Interpretative Score by team_id
+function getInterpretativeScoreByTeamId($scoreParams){
     global $conn;
 
-    $cand_id = mysqli_real_escape_string($conn, $scoreParams['cand_id']);
+    $team_id = mysqli_real_escape_string($conn, $scoreParams['team_id']);
 
-    if(empty(trim($cand_id))){
-        return error422('Enter candidate ID');
+    if(empty(trim($team_id))){
+        return error422('Enter team ID');
     }
 
     $query = "SELECT
@@ -245,20 +247,21 @@ function getInterpretativeScoreByCandId($scoreParams){
                 vs.choreography_and_style,
                 vs.costume_and_props,
                 vs.stage_presence,
-                vs.total_score
+                vs.total_score,
+                vs.created_at
               FROM interpretative_score vs
-              INNER JOIN interpretative_team vc ON vs.team_id = vc.team_id
-              WHERE vs.team_id = '$team_id' LIMIT 1";
+              INNER JOIN teams t ON vs.team_id = t.team_id
+              WHERE vs.team_id = '$team_id'";
 
     $result = mysqli_query($conn, $query);
 
     if($result){
-        if(mysqli_num_rows($result) == 1){
-            $res = mysqli_fetch_assoc($result);
+        if(mysqli_num_rows($result) > 0){
+            $res = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
             $data = [
                 'status' => 200,
-                'message' => 'Interpretative Score Fetched Successfully',
+                'message' => 'Interpretative Scores Fetched Successfully',
                 'data' => $res
             ];
             header("HTTP/1.0 200 OK");
@@ -266,7 +269,7 @@ function getInterpretativeScoreByCandId($scoreParams){
         }else{
             $data = [
                 'status' => 404,
-                'message' => 'No Interpretative Score Found for this Candidate',
+                'message' => 'No Interpretative Score Found for this Team',
             ];
             header("HTTP/1.0 404 Not Found");
             return json_encode($data);
@@ -281,7 +284,7 @@ function getInterpretativeScoreByCandId($scoreParams){
     }
 }
 
-// READ - Get Vocal Scores by Judge ID
+// READ - Get Interpretative Scores by Judge ID
 function getInterpretativeScoresByJudge($judgeParams){
     global $conn;
 
@@ -294,7 +297,7 @@ function getInterpretativeScoresByJudge($judgeParams){
     $whereClause = "WHERE vs.judge_id = '$judge_id'";
     if (isset($judgeParams['team']) && !empty(trim($judgeParams['team']))) {
         $team = mysqli_real_escape_string($conn, $judgeParams['team']);
-        $whereClause .= " AND vc.cand_team = '$team'";
+        $whereClause .= " AND t.team = '$team'";
     }
 
     $query = "SELECT
@@ -306,10 +309,10 @@ function getInterpretativeScoresByJudge($judgeParams){
                 vs.choreography_and_style,
                 vs.costume_and_props,
                 vs.stage_presence,
-                vs.total_score
+                vs.total_score,
                 vs.created_at
               FROM interpretative_score vs
-              INNER JOIN interpretative_team vc ON vs.cand_id = vc.cand_id
+              INNER JOIN teams t ON vs.team_id = t.team_id
               $whereClause
               ORDER BY vs.created_at DESC";
 
