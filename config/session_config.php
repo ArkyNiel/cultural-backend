@@ -3,7 +3,7 @@ $isLocal = isset($_SERVER['HTTP_ORIGIN']) && str_contains($_SERVER['HTTP_ORIGIN'
 
 $allowed_origins = $isLocal
     ? ["http://localhost:5173", "http://localhost:4173"]
-    : ["https://ic2-tabulation-frontend.vercel.app"]; 
+    : ["https://cultural-night.vercel.app/"]; 
 
 if (isset($_SERVER['HTTP_ORIGIN']) && in_array($_SERVER['HTTP_ORIGIN'], $allowed_origins)) {
     header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
